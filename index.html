@@ -26,6 +26,8 @@
         .eyebrow,.section-label { color:var(--teal); font:500 11px 'IBM Plex Mono',monospace; letter-spacing:.16em; text-transform:uppercase; }
         .eyebrow { margin-bottom:11px; }
         h1 { font-size:clamp(28px,4vw,46px); letter-spacing:-.045em; line-height:1; margin:0; }
+        .brand-row { display:flex; align-items:center; gap:14px; }
+        .brand-mark { flex-shrink:0; width:clamp(30px,4.6vw,50px); height:clamp(30px,4.6vw,50px); color:var(--teal); }
         .date-stamp { color:var(--muted); font:12px 'IBM Plex Mono',monospace; text-align:right; line-height:1.7; }
         .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--teal); margin-right:7px; box-shadow:0 0 0 4px rgba(79,216,196,.12); }
         .live-dot.offline { background:var(--coral); box-shadow:0 0 0 4px rgba(255,110,90,.12); }
@@ -179,7 +181,7 @@
     <div class="shell">
         <div id="alert-banner" class="top-banner alert-banner" hidden role="alert"></div>
         <div id="live-banner" class="top-banner live-banner" hidden aria-live="assertive" aria-atomic="true"></div>
-        <header><div><h1>ValleyStats <span style="color:var(--coral)">& Scoreboard</span></h1></div><div class="date-stamp"><div><span id="live-indicator" class="live-dot"></span><span id="clock">--:--</span> <span id="tz-name"></span></div><div id="today-label">Loading date...</div><div id="next-game-countdown" class="next-game-countdown" aria-live="polite">Next game: checking schedule...</div></div></header>
+        <header><div class="brand-row"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M11 3.5C11 2.67 10.33 2 9.5 2S8 2.67 8 3.5V10H6.5C5.67 10 5 10.67 5 11.5S5.67 13 6.5 13H8v8.5c0 .28.22.5.5.5h3c.28 0 .5-.22.5-.5V3.5Z" fill="currentColor"/><path d="M13 8.5c0-.83.67-1.5 1.5-1.5S16 7.67 16 8.5V13h1.5c.83 0 1.5.67 1.5 1.5S18.33 16 17.5 16H16v5.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V8.5Z" fill="currentColor"/></svg><h1>ValleyStats <span style="color:var(--coral)">& Scoreboard</span></h1></div><div class="date-stamp"><div><span id="live-indicator" class="live-dot"></span><span id="clock">--:--</span> <span id="tz-name"></span></div><div id="today-label">Loading date...</div><div id="next-game-countdown" class="next-game-countdown" aria-live="polite">Next game: checking schedule...</div></div></header>
         <main>
             <section aria-labelledby="weather-heading"><p class="section-label" id="weather-heading">Weather / now</p><div class="weather-and-today"><div class="weather-grid">
                 <article class="panel weather-card" data-weather="parker"><div class="location-row"><div><div class="location">Parker <span class="weather-status" data-weather-status>Live</span><span class="last-updated" data-weather-updated></span></div><div class="state">COLORADO / 80138</div></div><div class="sun-mark"><span class="material-symbols-rounded weather-icon">clear_day</span></div></div><div class="condition">Clear skies · feels like 49°</div><div class="temperature">52<sup>°F</sup></div><div class="weather-meta"><span>HIGH <strong>58°</strong></span><span>LOW <strong>38°</strong></span><span>WIND <strong>6 mph</strong><span class="material-symbols-rounded wind-arrow" data-wind-arrow aria-hidden="true">north</span></span></div><div class="hourly-strip" data-hourly aria-label="Next 12 hours"></div><div class="sun-times" data-suntimes><span>Sunrise --</span><span>Sunset --</span></div></article>
