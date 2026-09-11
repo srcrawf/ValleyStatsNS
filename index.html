@@ -127,6 +127,9 @@
         .matchup-logos { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
         .team-logo { width:28px; height:28px; object-fit:contain; display:block; }
         .logo-divider { color:var(--faint); font:500 10px 'IBM Plex Mono',monospace; letter-spacing:.03em; }
+        .logo-with-record { display:flex; flex-direction:column; align-items:center; gap:2px; }
+        .logo-record { color:var(--faint); font:8px 'IBM Plex Mono',monospace; }
+        .calendar-event .logo-record,.today-game .logo-record,.selected-day-game .logo-record { margin-top:0; }
         .calendar-event strong,.calendar-event span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .calendar-event strong { color:var(--ink); font-size:10px; }
         .sport-mark { position:absolute; top:6px; right:6px; display:block; font-size:18px; line-height:1; }
@@ -526,6 +529,18 @@
             return game.opponent.replace(/^(?:vs|@)\s*/, '');
         }
 
+        // Wraps a logo node with a small record caption underneath it, but
+        // only when there's actually a record to show — otherwise it hands
+        // back the bare logo node unchanged, so every existing layout that
+        // doesn't apply keeps its exact current markup and sizing.
+        function wrapLogoWithRecord(logoNode, recordText) {
+            if (!recordText) return logoNode;
+            const col = el('div', { className: 'logo-with-record' });
+            if (logoNode) col.appendChild(logoNode);
+            col.appendChild(el('span', { className: 'logo-record', text: recordText }));
+            return col;
+        }
+
         function logoPair(game, sizeClass) {
             // The logos always read away -> home left to right, with "at"
             // between them, regardless of which side is "our" team in the
@@ -533,14 +548,24 @@
             // the opponent, listed second, is home).
             const wrap = el('div', { className: 'matchup-logos' });
             const isAway = game.opponent.startsWith('@');
+
+            // A record only makes sense to show for a team's next upcoming
+            // game — showing it on every calendar box would just repeat the
+            // same "current" number over and over. `game` here is the exact
+            // object stored in `nextGameByTeamSport`, so identity comparison
+            // is enough — no separate id field needed.
+            const isNextGame = nextGameByTeamSport[`${game.teamKey}:${game.sport}`] === game;
+
             const ownSrc = safeImageUrl(game.logo || teamLogos[game.teamKey]);
-            const ownNode = ownSrc ? el('img', {
+            const ownImg = ownSrc ? el('img', {
                 className: 'team-logo',
                 src: ownSrc,
                 alt: `${game.team} logo`
             }) : null;
+            const ownNode = wrapLogoWithRecord(ownImg, isNextGame ? game.record : '');
+
             const oppSrc = safeImageUrl(game.opponentLogo);
-            const oppNode = oppSrc ? el('img', {
+            const oppImg = oppSrc ? el('img', {
                 className: 'team-logo',
                 src: oppSrc,
                 alt: `${opponentName(game)} logo`
@@ -549,6 +574,8 @@
                 'aria-label': 'Opponent logo unavailable',
                 text: '?'
             });
+            const oppNode = wrapLogoWithRecord(oppImg, isNextGame ? game.opponentRecord : '');
+
             const divider = el('span', {
                 className: 'logo-divider',
                 text: 'at'
@@ -582,6 +609,25 @@
                 day.appendChild(el('div', { className: 'precip', text: `${item.p} rain` }));
                 list.appendChild(day);
             });
+        }
+
+        // Tracks, per team+sport, which single game object is that team's next
+        // upcoming one — used to decide where it makes sense to show a
+        // records-under-the-logo caption without repeating the same "current"
+        // record across every box in the calendar. Recomputed from the live
+        // `games` array every time renderGames() runs, using object identity
+        // (not an id) to match, since every render reads the same game
+        // objects out of `games` rather than cloning them.
+        let nextGameByTeamSport = {};
+
+        function computeNextGameByTeamSport() {
+            const map = {};
+            games.forEach(game => {
+                if (game.state !== 'pre') return;
+                const key = `${game.teamKey}:${game.sport}`;
+                if (!map[key] || game.dateValue < map[key].dateValue) map[key] = game;
+            });
+            nextGameByTeamSport = map;
         }
 
         let selectedDayKey = null;
@@ -678,6 +724,7 @@
         }
 
         function renderGames(filter) {
+            computeNextGameByTeamSport();
             const visible = games.filter(g => filter === 'all' || g.sport === filter);
             const grouped = new Map();
             visible.forEach(game => {
@@ -926,6 +973,7 @@
             const statusText = isPlayed ? (shortDetail || (state === 'post' ? 'Final' : 'In Progress')) : '';
             const broadcast = broadcasterName(event, competition);
             const record = own?.records?.find(item => item.type === 'total')?.summary || own?.records?.[0]?.summary || '';
+            const opponentRecord = opponent?.records?.find(item => item.type === 'total')?.summary || opponent?.records?.[0]?.summary || '';
 
             // Venue city — only surfaced for away games (a home game is just
             // "home," it doesn't need its own city called out).
@@ -953,6 +1001,7 @@
                 state,
                 broadcast,
                 record,
+                opponentRecord,
                 venue,
                 venueCity
             };
