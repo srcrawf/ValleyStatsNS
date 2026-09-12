@@ -972,8 +972,17 @@
 
             const statusText = isPlayed ? (shortDetail || (state === 'post' ? 'Final' : 'In Progress')) : '';
             const broadcast = broadcasterName(event, competition);
-            const record = own?.records?.find(item => item.type === 'total')?.summary || own?.records?.[0]?.summary || '';
-            const opponentRecord = opponent?.records?.find(item => item.type === 'total')?.summary || opponent?.records?.[0]?.summary || '';
+            // ESPN's schedule endpoint puts this on a *singular* "record" key
+            // (not "records"), and the human-readable text is "displayValue"
+            // (not "summary") — easy to get wrong since neither name is what
+            // you'd guess, and this apparently has been wrong here for a
+            // while, silently returning '' for every game.
+            const record = own?.record?.find(item => item.type === 'total')?.displayValue || own?.record?.[0]?.displayValue || '';
+            // The opponent side of this same response genuinely has no
+            // "record" field at all (verified against live data) — ESPN only
+            // populates it for the team whose schedule you're querying, so
+            // this will normally stay empty and that's expected, not a bug.
+            const opponentRecord = opponent?.record?.find(item => item.type === 'total')?.displayValue || opponent?.record?.[0]?.displayValue || '';
 
             // Venue city — only surfaced for away games (a home game is just
             // "home," it doesn't need its own city called out).
