@@ -17,7 +17,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <style>
-        :root { --ink:#f1f5f5; --muted:#7e8fa0; --faint:#647689; --bg:#0a0f14; --panel:#10171d; --panel-raised:#161f27; --line:#202b34; --blue:#6fb4ff; --yellow:#f5b94a; --coral:#ff6e5a; --teal:#4fd8c4; }
+        :root { --ink:#f1f5f5; --muted:#7e8fa0; --faint:#7f92a3; --bg:#0a0f14; --panel:#10171d; --panel-raised:#161f27; --line:#202b34; --blue:#6fb4ff; --yellow:#f5b94a; --coral:#ff6e5a; --teal:#4fd8c4;
+          --team-cardinals:var(--coral); --team-asu:#e85d3f; --team-ua:#d9234b; --team-suns:#f27a31; }
         * { box-sizing:border-box; }
         body { margin:0; color:var(--ink); background:var(--bg); font-family:Sora,sans-serif; min-height:100vh; overflow-x:hidden; }
         body::before { content:""; position:fixed; inset:0; pointer-events:none; opacity:.28; background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px); background-size:48px 48px; mask-image:linear-gradient(to bottom,black,transparent 90%); }
@@ -123,12 +124,23 @@
         .calendar-day-number { display:block; color:var(--muted); font:11px 'IBM Plex Mono',monospace; margin-bottom:7px; }
         .is-today .calendar-day-number { color:var(--teal); font-weight:500; }
         .calendar-event { border-left:2px solid var(--coral); background:var(--panel-raised); border-radius:3px; padding:5px 28px 6px 5px; margin-top:4px; overflow:hidden; position:relative; }
-        .calendar-event[data-team="suns"] { border-left-color:#f27a31; } .calendar-event[data-team="asu"] { border-left-color:#e85d3f; } .calendar-event[data-team="ua"] { border-left-color:#d9234b; }
+        .calendar-event[data-team="suns"] { border-left-color:var(--team-suns); } .calendar-event[data-team="asu"] { border-left-color:var(--team-asu); } .calendar-event[data-team="ua"] { border-left-color:var(--team-ua); }
+        .team-legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; }
+        .team-legend span { display:inline-flex; align-items:center; gap:5px; color:var(--muted); font:9px 'IBM Plex Mono',monospace; }
+        .team-legend i { width:8px; height:8px; border-radius:50%; display:block; background:var(--team-cardinals); }
+        .team-legend span[data-team="asu"] i { background:var(--team-asu); }
+        .team-legend span[data-team="ua"] i { background:var(--team-ua); }
+        .team-legend span[data-team="suns"] i { background:var(--team-suns); }
+        #today-month { width:auto; font:600 11px 'IBM Plex Mono',monospace; padding:0 10px; }
         .matchup-logos { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
         .team-logo { width:28px; height:28px; object-fit:contain; display:block; }
         .logo-divider { color:var(--faint); font:500 10px 'IBM Plex Mono',monospace; letter-spacing:.03em; }
         .logo-with-record { display:flex; flex-direction:column; align-items:center; gap:2px; }
-        .logo-record { color:var(--faint); font:8px 'IBM Plex Mono',monospace; }
+        /* Shares its color/weight with .team-record below so "record" reads
+           as one consistent kind of information wherever it shows up,
+           whether it's this small caption under a logo or the inline chip
+           in a game's meta row — distinct from the surrounding muted text. */
+        .logo-record { color:var(--teal); font:500 8px 'IBM Plex Mono',monospace; }
         .calendar-event .logo-record,.today-game .logo-record,.selected-day-game .logo-record { margin-top:0; }
         .calendar-event strong,.calendar-event span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .calendar-event strong { color:var(--ink); font-size:10px; }
@@ -170,7 +182,7 @@
         .sun-times { display:flex; justify-content:space-between; color:var(--muted); font:10px 'IBM Plex Mono',monospace; margin-top:10px; }
         .wind-arrow { display:inline-block; font-size:13px; margin-left:3px; transition:transform .3s; transform-origin:center; }
         .broadcast-tag { color:var(--yellow); display:inline-block; font:9px 'IBM Plex Mono',monospace; margin-top:3px; }
-        .team-record { color:var(--faint); display:inline-block; font:9px 'IBM Plex Mono',monospace; margin-top:3px; margin-left:6px; }
+        .team-record { color:var(--teal); font-weight:500; display:inline-block; font-size:9px; font-family:'IBM Plex Mono',monospace; margin-top:3px; margin-left:6px; }
         .venue-tag { color:var(--blue); display:inline-block; font:9px 'IBM Plex Mono',monospace; margin-top:3px; margin-left:6px; }
         .venue-tag::before { content:"at "; }
         .form-strip { display:inline-flex; align-items:center; gap:3px; margin-top:3px; margin-left:6px; vertical-align:middle; }
@@ -182,6 +194,12 @@
            on one row instead, so they win back inline layout here. */
         .selected-day-game .broadcast-tag,.selected-day-game .team-record,.selected-day-game .venue-tag,
         .today-game .broadcast-tag,.today-game .team-record,.today-game .venue-tag { display:inline-block; }
+        /* .calendar-event/.today-game/.selected-day-game span rules set their
+           own color at higher specificity than a bare .team-record/
+           .logo-record, which would otherwise wash the record color back
+           out to muted in every one of these contexts — win it back here. */
+        .calendar-event .team-record,.today-game .team-record,.selected-day-game .team-record,
+        .calendar-event .logo-record,.today-game .logo-record,.selected-day-game .logo-record { color:var(--teal); }
         .selected-day-game .form-strip,.today-game .form-strip { display:inline-flex; }
         footer { color:var(--faint); font:10px 'IBM Plex Mono',monospace; margin-top:26px; }
         @media (max-width:900px) { .shell { width:min(100% - 32px,680px); padding-top:22px; } main { grid-template-columns:1fr; } main > section { min-width:0; max-width:100%; } .weather-and-today { grid-template-columns:1fr; width:100%; min-width:0; } .weather-grid { display:grid; width:100%; min-width:0; } .month-grid { min-width:0; } .calendar-cell { min-height:82px; } }
@@ -202,7 +220,7 @@
                 <article class="panel weather-card" data-weather="parker"><div class="location-row"><div><div class="location">Parker <span class="weather-status" data-weather-status>Live</span><span class="last-updated" data-weather-updated></span></div><div class="state">COLORADO / 80138</div></div><div class="sun-mark"><span class="material-symbols-rounded weather-icon">clear_day</span></div></div><div class="condition">Clear skies · feels like 49°</div><div class="temperature">52<sup>°F</sup></div><div class="weather-meta"><span>HIGH <strong>58°</strong></span><span>LOW <strong>38°</strong></span><span>WIND <strong>6 mph</strong><span class="material-symbols-rounded wind-arrow" data-wind-arrow aria-hidden="true">north</span></span></div><div class="hourly-strip" data-hourly aria-label="Next 12 hours"></div><div class="sun-times" data-suntimes><span>Sunrise --</span><span>Sunset --</span></div></article>
                 <article class="panel weather-card" data-weather="tempe"><div class="location-row"><div><div class="location">Tempe <span class="weather-status" data-weather-status>Live</span><span class="last-updated" data-weather-updated></span></div><div class="state">ARIZONA / 85281</div></div><div class="sun-mark" style="color:var(--coral)"><span class="material-symbols-rounded weather-icon">clear_day</span></div></div><div class="condition">Sunny · feels like 93°</div><div class="temperature">94<sup>°F</sup></div><div class="weather-meta"><span>HIGH <strong>98°</strong></span><span>LOW <strong>75°</strong></span><span>WIND <strong>8 mph</strong><span class="material-symbols-rounded wind-arrow" data-wind-arrow aria-hidden="true">north</span></span></div><div class="hourly-strip" data-hourly aria-label="Next 12 hours"></div><div class="sun-times" data-suntimes><span>Sunrise --</span><span>Sunset --</span></div></article>
             </div><aside class="panel today-games" aria-labelledby="today-games-title"><h2 class="today-games-title" id="today-games-title">Today’s games</h2><div class="today-games-date" id="today-games-date">MST · loading</div><div id="today-games-list"><p class="today-empty">Checking the schedule...</p></div></aside></div><div class="panel forecast-panel"><div class="card-top"><p class="section-label" style="margin:0">10-day outlook</p><div class="forecast-tabs" role="tablist"><button class="active" data-location="parker" role="tab">Parker</button><button data-location="tempe" role="tab">Tempe</button></div></div><div id="forecast-list" class="forecast-list" aria-live="polite"></div></div></section>
-            <section aria-labelledby="sports-heading"><p class="section-label" id="sports-heading">Schedules / upcoming</p><div class="panel agenda"><div class="agenda-head"><div><h2 class="agenda-title">On the calendar</h2><div class="agenda-subtitle">Football & basketball · 2026–27 season</div></div><div class="agenda-tools"><span id="source-status" class="source-status">Loading games...</span><span id="sports-updated" class="last-updated"></span><button id="refresh-sports" class="refresh-button" type="button">Refresh</button></div></div><div class="filter" role="group" aria-label="Filter games"><button class="active" data-filter="all">All games</button><button data-filter="football">Football</button><button data-filter="basketball">Basketball</button></div><div class="calendar-heading"><h3 id="calendar-month-title" class="month-title" style="margin:0">Loading month...</h3><div class="calendar-nav" aria-label="Change visible month"><button id="previous-month" type="button" aria-label="Previous month">&#8592;</button><button id="next-month" type="button" aria-label="Next month">&#8594;</button></div></div><div id="selected-day-games" class="selected-day-games" hidden aria-live="polite" aria-atomic="true"></div><div id="schedule" class="schedule"></div></div></section>
+            <section aria-labelledby="sports-heading"><p class="section-label" id="sports-heading">Schedules / upcoming</p><div class="panel agenda"><div class="agenda-head"><div><h2 class="agenda-title">On the calendar</h2><div class="agenda-subtitle">Football & basketball · 2026–27 season</div></div><div class="agenda-tools"><span id="source-status" class="source-status">Loading games...</span><span id="sports-updated" class="last-updated"></span><button id="refresh-sports" class="refresh-button" type="button">Refresh</button></div></div><div class="filter" role="group" aria-label="Filter games"><button class="active" data-filter="all">All games</button><button data-filter="football">Football</button><button data-filter="basketball">Basketball</button></div><div class="team-legend" aria-hidden="true"><span data-team="cardinals"><i></i>Cardinals</span><span data-team="asu"><i></i>Sun Devils</span><span data-team="ua"><i></i>Wildcats</span><span data-team="suns"><i></i>Suns</span></div><div class="calendar-heading"><h3 id="calendar-month-title" class="month-title" style="margin:0">Loading month...</h3><div class="calendar-nav" aria-label="Change visible month"><button id="today-month" type="button" hidden>Today</button><button id="previous-month" type="button" aria-label="Previous month">&#8592;</button><button id="next-month" type="button" aria-label="Next month">&#8594;</button></div></div><div id="selected-day-games" class="selected-day-games" hidden aria-live="polite" aria-atomic="true"></div><div id="schedule" class="schedule"></div></div></section>
         </main>
         <footer>Weather is live · schedules show live ESPN data where available, with fallback rows for unpublished feeds · all game times shown in Mountain Time</footer>
     </div>
@@ -518,20 +536,52 @@
             return false;
         }
 
-        // A team's "current record" heading into their next game has to be
-        // tallied ourselves from games already played this season, rather
-        // than trusted from ESPN's per-event "record" field — that field
-        // turns out to only be populated on already-played (state 'post')
-        // events, and is simply absent on not-yet-played ones (verified
-        // against live data), which is exactly the case this is for. This
-        // only works for a tracked team (asu/ua/cardinals/suns), since
-        // that's the only side whose full season schedule we've fetched —
-        // an opponent's record still has to come from ESPN, when it has it.
-        function computeOwnRecord(teamKey, sport) {
-            const played = games.filter(g => g.teamKey === teamKey && g.sport === sport && g.state === 'post');
+        // A team's record has to be tallied ourselves from games already
+        // played this season, rather than trusted from ESPN's per-event
+        // "record" field — that field turns out to only be populated on
+        // already-played (state 'post') events, and is simply absent on
+        // not-yet-played ones (verified against live data). Computing it
+        // ourselves also means every display of "record" in the app (the
+        // day panel, today's games, and the under-the-logo caption for a
+        // team's next game) is reading the same number the same way,
+        // instead of some of them trusting a field ESPN doesn't reliably
+        // provide. This only works for a tracked team (asu/ua/cardinals/
+        // suns), since that's the only side whose full season schedule
+        // we've fetched — an opponent's record still has to come from
+        // ESPN, when it has it.
+        //
+        // asOfDate scopes it to games played on or before that date, so a
+        // past game shows what the record was right after that game, and
+        // an upcoming game shows the current record heading into it.
+        function computeOwnRecord(teamKey, sport, asOfDate) {
+            const played = games.filter(g => g.teamKey === teamKey && g.sport === sport &&
+                g.state === 'post' && g.dateValue <= asOfDate);
             if (!played.length) return '';
             const wins = played.filter(didWin).length;
             return `${wins}-${played.length - wins}`;
+        }
+
+        // Shared meta row — broadcast, record, venue, recent form — used by
+        // both the day-detail panel and today's-games list, which show the
+        // same set of secondary details about a game. (The calendar
+        // month-grid view deliberately doesn't use this: there's no room
+        // for all of it in a tiny box, and tapping a day already opens the
+        // panel that does.) Pulling this into one place means a fix here
+        // reaches every view that shows it, instead of needing to be
+        // copy-pasted correctly into two nearly-identical blocks.
+        function appendGameMeta(container, game) {
+            if (game.broadcast && game.broadcast !== 'TBD') {
+                container.appendChild(el('span', { className: 'broadcast-tag', text: `TV ${game.broadcast}` }));
+            }
+            const record = computeOwnRecord(game.teamKey, game.sport, game.dateValue);
+            if (record) {
+                container.appendChild(el('span', { className: 'team-record', text: record }));
+            }
+            if (game.venue) {
+                container.appendChild(el('span', { className: 'venue-tag', text: game.venue }));
+            }
+            const form = recentForm(game);
+            if (form) container.appendChild(form);
         }
 
         // ---------------------------------------------------------------------------
@@ -578,7 +628,7 @@
                 src: ownSrc,
                 alt: `${game.team} logo`
             }) : null;
-            const ownNode = wrapLogoWithRecord(ownImg, isNextGame ? computeOwnRecord(game.teamKey, game.sport) : '');
+            const ownNode = wrapLogoWithRecord(ownImg, isNextGame ? computeOwnRecord(game.teamKey, game.sport, game.dateValue) : '');
 
             const oppSrc = safeImageUrl(game.opponentLogo);
             const oppImg = oppSrc ? el('img', {
@@ -686,17 +736,7 @@
                     const mid = el('div');
                     mid.appendChild(el('strong', { text: game.team }));
                     mid.appendChild(el('span', { text: opponentName(game) }));
-                    if (game.broadcast && game.broadcast !== 'TBD') {
-                        mid.appendChild(el('span', { className: 'broadcast-tag', text: `TV ${game.broadcast}` }));
-                    }
-                    if (game.record) {
-                        mid.appendChild(el('span', { className: 'team-record', text: game.record }));
-                    }
-                    if (game.venue) {
-                        mid.appendChild(el('span', { className: 'venue-tag', text: game.venue }));
-                    }
-                    const form = recentForm(game);
-                    if (form) mid.appendChild(form);
+                    appendGameMeta(mid, game);
                     article.appendChild(mid);
                     article.appendChild(el('span', { className: 'selected-day-time', text: displayInfo }));
                     list.appendChild(article);
@@ -737,8 +777,9 @@
             if (game.broadcast && game.broadcast !== 'TBD') {
                 node.appendChild(el('span', { className: 'broadcast-tag', text: `TV ${game.broadcast}` }));
             }
-            if (game.record) {
-                node.appendChild(el('span', { className: 'team-record', text: game.record }));
+            const calendarRecord = computeOwnRecord(game.teamKey, game.sport, game.dateValue);
+            if (calendarRecord) {
+                node.appendChild(el('span', { className: 'team-record', text: calendarRecord }));
             }
             return node;
         }
@@ -835,6 +876,10 @@
             document.querySelector('#calendar-month-title').textContent = visibleCalendarMonth;
             document.querySelector('#previous-month').disabled = monthKeys.indexOf(visibleCalendarMonth) === 0;
             document.querySelector('#next-month').disabled = monthKeys.indexOf(visibleCalendarMonth) === monthKeys.length - 1;
+            // Only worth showing a way back to the current month once you've
+            // actually navigated away from it.
+            const todayButton = document.querySelector('#today-month');
+            if (todayButton) todayButton.hidden = visibleCalendarMonth === currentMonthKey || !monthKeys.includes(currentMonthKey);
         }
 
         function moveCalendarMonth(direction) {
@@ -846,10 +891,21 @@
             updateCalendarMonth();
         }
 
+        function goToCurrentCalendarMonth() {
+            const currentMonthKey = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' })
+                .format(new Date()).toUpperCase();
+            const monthKeys = [...document.querySelectorAll('#schedule > section .month-title')]
+                .map(t => t.textContent);
+            if (!monthKeys.includes(currentMonthKey)) return;
+            visibleCalendarMonth = currentMonthKey;
+            updateCalendarMonth();
+        }
+
         const calendarObserver = new MutationObserver(updateCalendarMonth);
         calendarObserver.observe(document.querySelector('#schedule'), { childList: true });
         document.querySelector('#previous-month').addEventListener('click', () => moveCalendarMonth(-1));
         document.querySelector('#next-month').addEventListener('click', () => moveCalendarMonth(1));
+        document.querySelector('#today-month').addEventListener('click', goToCurrentCalendarMonth);
         document.querySelectorAll('[data-filter]').forEach(button =>
             button.addEventListener('click', () => setTimeout(updateCalendarMonth, 0)));
 
@@ -911,17 +967,7 @@
                 teamLine.appendChild(document.createTextNode(game.team));
                 article.appendChild(teamLine);
                 article.appendChild(el('span', { text: gameInfo }));
-                if (game.broadcast) {
-                    article.appendChild(el('span', { className: 'broadcast-tag', text: `TV ${game.broadcast}` }));
-                }
-                if (game.record) {
-                    article.appendChild(el('span', { className: 'team-record', text: game.record }));
-                }
-                if (game.venue) {
-                    article.appendChild(el('span', { className: 'venue-tag', text: game.venue }));
-                }
-                const form = recentForm(game);
-                if (form) article.appendChild(form);
+                appendGameMeta(article, game);
                 list.appendChild(article);
             });
         }
@@ -992,16 +1038,17 @@
 
             const statusText = isPlayed ? (shortDetail || (state === 'post' ? 'Final' : 'In Progress')) : '';
             const broadcast = broadcasterName(event, competition);
-            // ESPN's schedule endpoint puts this on a *singular* "record" key
-            // (not "records"), and the human-readable text is "displayValue"
-            // (not "summary") — easy to get wrong since neither name is what
-            // you'd guess, and this apparently has been wrong here for a
-            // while, silently returning '' for every game.
-            const record = own?.record?.find(item => item.type === 'total')?.displayValue || own?.record?.[0]?.displayValue || '';
-            // The opponent side of this same response genuinely has no
-            // "record" field at all (verified against live data) — ESPN only
-            // populates it for the team whose schedule you're querying, so
-            // this will normally stay empty and that's expected, not a bug.
+            // Our own team's record is computed from season results
+            // elsewhere (computeOwnRecord) rather than trusted from here —
+            // ESPN's own "record" field (a *singular* key, with the text
+            // under "displayValue" — easy to get wrong) turns out to only
+            // be populated on already-played events, so it's not a
+            // reliable single source of truth for every display of it.
+            // The opponent side genuinely has no "record" field at all on
+            // this endpoint (verified against live data) — ESPN only
+            // populates it for the team whose schedule you're querying —
+            // and we don't have the opponent's own season schedule fetched
+            // to compute it ourselves, so this stays best-effort from ESPN.
             const opponentRecord = opponent?.record?.find(item => item.type === 'total')?.displayValue || opponent?.record?.[0]?.displayValue || '';
 
             // Venue city — only surfaced for away games (a home game is just
@@ -1029,7 +1076,6 @@
                 score: scores,
                 state,
                 broadcast,
-                record,
                 opponentRecord,
                 venue,
                 venueCity
