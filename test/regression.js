@@ -160,6 +160,28 @@ setTimeout(() => {
                 .every(cls => mobileBlock.includes(`.calendar-event .${cls}`)),
             true);
 
+        // --- .sport-mark must not escape to the page corner in contexts
+        // without their own positioning container. The base rule positions
+        // it absolute (for the calendar box's corner badge, contained by
+        // .calendar-event's position:relative); .today-game has no
+        // equivalent container, so without an override the badge escapes
+        // all the way up to .shell and renders pinned to the top-right of
+        // the whole page instead of next to the team name. This exact bug
+        // shipped and only became visible once "today" actually had a game.
+        run(`
+            window.__todayMarkEl = document.createElement('article');
+            window.__todayMarkEl.className = 'today-game';
+            const strongEl = document.createElement('strong');
+            const markEl = document.createElement('span');
+            markEl.className = 'sport-mark';
+            strongEl.appendChild(markEl);
+            window.__todayMarkEl.appendChild(strongEl);
+            document.body.appendChild(window.__todayMarkEl);
+        `);
+        check('.today-game .sport-mark does not escape to the page corner',
+            run(`window.getComputedStyle(document.querySelector('.today-game .sport-mark')).position`),
+            'static');
+
         console.log(`\n${passed} passed, ${failed} failed.`);
         process.exit(failed ? 1 : 0);
     } catch (e) {

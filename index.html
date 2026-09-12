@@ -55,7 +55,14 @@
         .today-game { border-top:1px solid var(--line); margin-top:15px; padding-top:14px; }
         .today-game .matchup-logos { margin-bottom:10px; gap:7px; }
         .today-game .team-logo { width:34px; height:34px; }
-        .today-game .sport-mark { color:var(--yellow); display:inline; font-size:15px; margin-right:5px; }
+        /* The base .sport-mark rule below positions it absolute for the
+           calendar box's corner badge — that's only meant to work inside
+           .calendar-event, which sets position:relative to contain it.
+           .today-game never set an equivalent, so this rule needs to
+           cancel it back to normal inline flow, or it escapes all the way
+           up to .shell (position:relative) and renders pinned to the
+           top-right of the whole page instead of next to the team name. */
+        .today-game .sport-mark { position:static; color:var(--yellow); display:inline; font-size:15px; margin-right:5px; }
         .today-game strong { color:var(--ink); display:block; font-size:11px; }
         .today-game span { color:var(--muted); display:block; font:10px 'IBM Plex Mono',monospace; margin-top:4px; }
         .today-empty { color:var(--faint); font-size:11px; line-height:1.5; margin:28px 0 4px; }
