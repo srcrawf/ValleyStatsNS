@@ -518,6 +518,22 @@
             return false;
         }
 
+        // A team's "current record" heading into their next game has to be
+        // tallied ourselves from games already played this season, rather
+        // than trusted from ESPN's per-event "record" field — that field
+        // turns out to only be populated on already-played (state 'post')
+        // events, and is simply absent on not-yet-played ones (verified
+        // against live data), which is exactly the case this is for. This
+        // only works for a tracked team (asu/ua/cardinals/suns), since
+        // that's the only side whose full season schedule we've fetched —
+        // an opponent's record still has to come from ESPN, when it has it.
+        function computeOwnRecord(teamKey, sport) {
+            const played = games.filter(g => g.teamKey === teamKey && g.sport === sport && g.state === 'post');
+            if (!played.length) return '';
+            const wins = played.filter(didWin).length;
+            return `${wins}-${played.length - wins}`;
+        }
+
         // ---------------------------------------------------------------------------
         // Pure render helpers (DOM)
         // ---------------------------------------------------------------------------
@@ -562,7 +578,7 @@
                 src: ownSrc,
                 alt: `${game.team} logo`
             }) : null;
-            const ownNode = wrapLogoWithRecord(ownImg, isNextGame ? game.record : '');
+            const ownNode = wrapLogoWithRecord(ownImg, isNextGame ? computeOwnRecord(game.teamKey, game.sport) : '');
 
             const oppSrc = safeImageUrl(game.opponentLogo);
             const oppImg = oppSrc ? el('img', {
